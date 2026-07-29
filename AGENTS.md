@@ -26,15 +26,71 @@ research → product → specs → architecture → threat-model
 
 ```bash
 openspec status --change <change-name>     # what is done, what is blocked
-openspec instructions <artifact>           # what this artifact must contain
-openspec validate <change-name>            # structural check
+openspec instructions <artifact> --change <change-name>   # what this artifact must contain
+openspec validate <change-name>            # delta-spec structural check
 ```
 
 Do not skip ahead. `product` without `research` is invention; `tasks` without
 `benchmark` produces work nobody can evaluate.
 
 Artifact-level rules live in `openspec/config.yaml` under `rules:`. They are
-requirements, not suggestions.
+requirements, not suggestions. They reach you through
+`openspec instructions <artifact> --json` as the `rules` field — apply them as
+constraints, never copy them into the artifact file.
+
+### One artifact per step — enforced by configuration
+
+The installed workflows are deliberately restricted:
+
+| Available | Deliberately absent |
+| --- | --- |
+| `/opsx:new`, `/opsx:continue`, `/opsx:apply`, `/opsx:verify`, `/opsx:update`, `/opsx:sync`, `/opsx:archive`, `/opsx:explore` | `/opsx:propose`, `/opsx:ff`, `/opsx:bulk-archive`, `/opsx:onboard` |
+
+`/opsx:propose` generates every artifact in one pass and `/opsx:ff` fast-forwards
+the chain. For this project both are failure modes, not shortcuts: a single-pass
+run produces a `research.md` full of plausible citations nobody checked, and
+every downstream artifact then inherits fiction. Use `/opsx:new` to scaffold,
+then `/opsx:continue` once per artifact, reviewing each before unlocking the
+next.
+
+If those commands are missing, the machine-level profile was reset. Restore with:
+
+```bash
+openspec config set profile custom
+openspec config set workflows '["explore","new","continue","apply","update","sync","archive","verify"]'
+openspec update
+```
+
+### Two OpenSpec behaviors to know
+
+**`openspec validate` needs delta specs.** A change that has artifacts but no
+`specs/<capability>/spec.md` yet fails with "Change must have at least one
+delta". That is expected, not a broken setup. Use `openspec status --change` for
+progress while a change is still in the artifact phase.
+
+**`/opsx:verify` looks for `design.md`.** Its coherence dimension checks
+implementation against a `design` artifact, which this schema does not have. Map
+that step onto `architecture.md` and `adrs.md` instead — an ADR violation is a
+CRITICAL coherence finding here, not a skipped check.
+
+### Editing specs while other changes are active
+
+OpenSpec applies `## MODIFIED Requirements` by replacing the whole requirement
+block at archive time. There is a guard: archive aborts if the live spec contains
+a scenario your MODIFIED block omits ("Refresh the change spec before archiving
+to avoid dropping scenarios"), so you cannot silently delete a sibling change's
+scenario.
+
+The guard compares scenario **names and counts only**. It does not compare
+scenario bodies or the requirement description. So if another change already
+archived an edit to the *body* of a scenario you also carry, your block
+overwrites it without warning. Before archiving a change with MODIFIED
+requirements, re-read the live `openspec/specs/<capability>/spec.md` and rebase
+your delta onto it.
+
+This is worth internalising rather than merely obeying: it is the exact class of
+failure OpenMerge exists to catch — two independently valid changes, a clean
+merge, and a silently wrong result.
 
 ## Naming — settled, do not re-open
 

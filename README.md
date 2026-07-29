@@ -117,11 +117,17 @@ Two properties matter more than the artifact count:
 - `verification` is authored as a contract (every row `pending`) and completed as
   a record (every `pass` cites a command and its real outcome).
 
+Artifacts are created **one per step** via `/opsx:new` then `/opsx:continue`, each
+reviewed before the next unlocks. The one-shot `/opsx:propose` and `/opsx:ff`
+workflows are deliberately not installed — a single pass over ten artifacts
+produces citations nobody verified, and everything downstream inherits them.
+
 Inspect the workflow:
 
 ```bash
 openspec schema validate openmerge-product
 openspec status --change define-product-contracts
+openspec instructions research --change define-product-contracts
 ```
 
 ## Roadmap
