@@ -1,0 +1,488 @@
+name: openmerge-product
+version: 1
+description: >
+  Evidence-first workflow for OpenMerge — research → product → specs →
+  architecture → threat-model → benchmark → adrs → rollout → tasks → verification
+
+artifacts:
+  - id: research
+    generates: research.md
+    description: Competitors, primary sources, prior art, and unresolved questions
+    template: research.md
+    requires: []
+    instruction: >
+      Research the problem before proposing any implementation.
+
+
+      Sections:
+
+      - **Problem Evidence**: What breaks today, with primary sources. Every
+      quantitative claim needs a citation (paper, official docs, repository,
+      issue). Papers must be named with their identifier (e.g. arXiv id) and the
+      exact figure quoted, not paraphrased from memory.
+
+      - **Prior Art**: Systems that already attack part of this problem, and the
+      precise boundary of what each one does and does not do.
+
+      - **Competitive Landscape**: Split into four buckets — direct competitors,
+      adjacent tools, substitutes (including "do nothing" and "review it by
+      hand"), and future competitors likely to expand into this space. Include
+      incumbent risk: which existing vendor could absorb this feature cheaply.
+
+      - **Evidence Ledger**: A table with columns `Claim | Type | Source |
+      Confidence`. `Type` MUST be one of `verified-fact`, `measured-evidence`,
+      `inference`, `assumption`. Every row with type `assumption` MUST state what
+      would falsify it.
+
+      - **Open Questions**: What is still unknown, and what would resolve it.
+
+
+      Rules:
+
+      - Prefer primary sources: official repositories, official documentation,
+      papers. Blog summaries are secondary and must be labelled as such.
+
+      - A search returning no results is NOT evidence of absence. Say
+      "unverified", never "does not exist".
+
+      - Do not use popularity metrics (GitHub stars, downloads) as evidence of
+      correctness or demand.
+
+      - Unsupported assumptions MUST be marked explicitly rather than smoothed
+      into prose.
+
+  - id: product
+    generates: product.md
+    description: User, job, workflow, positioning, and product boundaries
+    template: product.md
+    requires:
+      - research
+    instruction: >
+      Define the product from the research, not from the technology.
+
+
+      Sections:
+
+      - **Positioning**: One sentence. What this is, for whom, replacing what.
+
+      - **Target User**: Concrete role and situation, including how many parallel
+      coding agents they run and what tooling they already use.
+
+      - **Who Will Not Use This**: Explicit non-users. A product without
+      non-users has no positioning.
+
+      - **The Must-Have Moment**: The exact moment the user decides they cannot
+      go back. Write it as a narrative of one incident, not as a benefit list.
+
+      - **Primary Workflow**: The end-to-end path from agent start to safe
+      integration, as the user experiences it.
+
+      - **Product Boundaries**: What this is NOT. Name the neighbouring tool
+      categories it will be mistaken for and state the difference for each.
+
+      - **Value vs Novelty**: Separate "why a user adopts or pays" from "why this
+      is technically interesting". These are different lists and must not be
+      conflated.
+
+      - **Progressive Adoption Ladder**: The stages a user moves through, from
+      passive observation to automated integration.
+
+
+      Rules:
+
+      - Product value MUST be stated in terms of failures prevented and time
+      saved, not in terms of analysis sophistication.
+
+      - Every claim about user behaviour traces to a research.md evidence row or
+      is labelled an assumption.
+
+  - id: specs
+    generates: specs/**/*.md
+    description: Observable requirements and acceptance scenarios
+    template: spec.md
+    requires:
+      - product
+    instruction: >
+      Create specification files that define WHAT the system does, in terms of
+      observable behavior only.
+
+
+      Create one spec file per capability listed in the product's scope.
+
+      - New capabilities: kebab-case name at `specs/<capability>/spec.md`.
+
+      - Modified capabilities: use the existing folder name from
+      `openspec/specs/<capability>/` when creating the delta spec.
+
+
+      Delta operations (use ## headers):
+
+      - **ADDED Requirements**: New capabilities
+
+      - **MODIFIED Requirements**: Changed behavior — MUST include the full
+      updated requirement block
+
+      - **REMOVED Requirements**: MUST include **Reason** and **Migration**
+
+      - **RENAMED Requirements**: use FROM:/TO: format
+
+
+      Format requirements:
+
+      - Each requirement: `### Requirement: <name>` followed by a description
+
+      - Use SHALL/MUST for normative requirements (avoid should/may)
+
+      - Each scenario: `#### Scenario: <name>` with WHEN/THEN bullets
+
+      - **CRITICAL**: Scenarios MUST use exactly 4 hashtags (`####`). Three
+      hashtags or bullets will fail silently.
+
+      - Every requirement MUST have at least one scenario.
+
+
+      Additional rules for this product:
+
+      - Every requirement that can block an agent MUST have three scenarios: a
+      pass case, a fail case, and an error/degraded case (tool missing, timeout,
+      sandbox unavailable).
+
+      - Requirements describing verdicts MUST state the evidence that backs the
+      verdict, because a blocking verdict without reproducible evidence is not
+      shippable behavior.
+
+      - No implementation detail: no crate names, no function names, no file
+      layout. Those belong in architecture.md.
+
+      - Never specify that a user's branch, index, worktree, or refs are
+      modified. Non-mutation is a product invariant, and any requirement implying
+      mutation is a specification bug.
+
+  - id: architecture
+    generates: architecture.md
+    description: Components, data models, protocols, and execution flows
+    template: architecture.md
+    requires:
+      - specs
+    instruction: >
+      Explain HOW the specified behavior is realised.
+
+
+      Sections:
+
+      - **Context**: Current state, constraints, and what already exists.
+
+      - **Component Map**: Components and their responsibilities, with the
+      dependency direction between them. State explicitly which components are
+      forbidden from depending on which.
+
+      - **Trust Boundaries**: Where untrusted input crosses into trusted
+      execution. Repository contents and agent-generated code are untrusted.
+
+      - **Data Model**: Entities, identity, and how identity is derived. State
+      which identifiers are content-addressed and what exactly is hashed.
+
+      - **Data Ownership and Lifecycle**: Who writes each piece of state, where
+      it lives, when it is garbage-collected, and what leaves the machine.
+
+      - **Protocols**: Wire formats and their versioning rules, including what
+      happens when versions mismatch.
+
+      - **Execution Flows**: The hot paths, end to end, with the latency budget
+      for each stage.
+
+      - **Concurrency**: What runs in parallel, what is serialized, how stale
+      work is cancelled, and how single-instance ownership is enforced.
+
+      - **Caching**: Cache keys, what invalidates them, and a correctness
+      argument for every cache.
+
+      - **Crash Recovery**: What is durable, what is rebuilt, and the guarantee
+      that survives an unclean shutdown.
+
+      - **Compatibility**: Forward and backward compatibility for on-disk state
+      and protocols.
+
+      - **Rejected Alternatives**: Options considered and why each was rejected.
+      An architecture without rejected alternatives has not made decisions.
+
+
+      Rules:
+
+      - Expensive work belongs in the long-running process; anything on an agent
+      hook path must have a stated latency budget.
+
+      - Language-specific or vendor-specific analysis MUST sit behind an adapter
+      boundary; core components stay generic.
+
+      - Any component that consumes model output MUST be shown as unable to
+      produce a verdict on its own.
+
+  - id: threat-model
+    generates: threat-model.md
+    description: Security boundaries, abuse cases, secrets, and sandboxing
+    template: threat-model.md
+    requires:
+      - architecture
+    instruction: >
+      Model the security of a system that executes code written by autonomous
+      agents.
+
+
+      Sections:
+
+      - **Assets**: What an attacker wants — source, credentials, CI identity,
+      the developer's machine, other agents' worktrees.
+
+      - **Trust Assumptions**: What is trusted and by whom. Repository contents,
+      branch contents, hook definitions, and agent-generated code are ALL
+      untrusted by default.
+
+      - **Threat Inventory**: One entry per threat with attacker capability,
+      attack path, impact, and mitigation. MUST cover at minimum: shell injection
+      through paths and branch names, secret leakage into logs and evidence,
+      malicious hook or config definitions arriving on a branch, dependency
+      install and build scripts executing arbitrary code, resource exhaustion
+      (CPU, memory, disk, file descriptors, process fork), sandbox escape,
+      network exfiltration, symlink and path traversal during snapshot
+      materialisation, and poisoned cache entries.
+
+      - **Sandbox Contract**: The exact default posture — network policy,
+      filesystem mounts, credential inheritance, resource quotas, timeouts, and
+      process-tree termination.
+
+      - **Trust Modes**: Each execution posture, what it permits, and how the
+      user opts in.
+
+      - **Secret Handling**: Where secrets can appear, how they are redacted, and
+      what is verified by test rather than by convention.
+
+      - **Abuse Cases**: Misuse by a legitimate but careless user, and misuse of
+      the product as an attack amplifier against a third party.
+
+      - **Residual Risk**: What is knowingly not mitigated, and why that is
+      acceptable.
+
+
+      Rules:
+
+      - Every mitigation MUST name the test or check that proves it holds. "We are
+      careful" is not a mitigation.
+
+      - The default posture MUST be the safe one; the fast posture is opt-in.
+
+  - id: benchmark
+    generates: benchmark.md
+    description: Fixtures, datasets, metrics, and quality thresholds
+    template: benchmark.md
+    requires:
+      - specs
+      - architecture
+    instruction: >
+      Define how this change is measured, before it is built.
+
+
+      Sections:
+
+      - **Ground Truth**: The fixtures or datasets, how they are constructed, and
+      why the expected outcome is known independently of the implementation under
+      test.
+
+      - **Fixture Construction**: For integration-failure fixtures, each one MUST
+      satisfy and assert: base passes, each side passes alone, textual merge is
+      clean, the combination fails, and the failure reproduces deterministically.
+
+      - **Metrics**: Each metric with its exact definition and computation.
+
+      - **Thresholds**: The pass/fail bar for each metric and the rationale for
+      that number.
+
+      - **Overhead Budget**: Compute, wall-clock, memory, and cache-hit
+      expectations introduced by this change.
+
+      - **Anti-Metrics**: Numbers that MUST NOT be used to claim success.
+
+
+      Rules:
+
+      - Ground truth MUST be reproducible from a clean checkout by one command.
+
+      - MUST measure actionable precision (findings a user would act on ÷ all
+      findings), recall against known fixtures, false warnings per agent session,
+      median lead time ahead of the user's existing pipeline, and compute
+      overhead.
+
+      - Popularity metrics (stars, downloads, sign-ups) are anti-metrics for
+      correctness and MUST be listed as such.
+
+      - A metric with no defined computation is not a metric; delete it or define
+      it.
+
+  - id: adrs
+    generates: adrs.md
+    description: Non-negotiable architectural decisions
+    template: adrs.md
+    requires:
+      - architecture
+      - threat-model
+    instruction: >
+      Record the decisions that later work is not allowed to quietly reverse.
+
+
+      One entry per decision, each with: `Status`, `Context`, `Decision`,
+      `Consequences`, `Alternatives Rejected`, and `Reversal Cost`.
+
+
+      Rules:
+
+      - Status MUST be one of `accepted`, `superseded-by <id>`, or `proposed`.
+
+      - `Decision` MUST be written as a constraint that can be violated, so that a
+      future violation is detectable. "Be modular" is not an ADR. "Core
+      components MUST NOT depend on any vendor adapter crate" is.
+
+      - `Reversal Cost` MUST state what breaks for existing users if this is
+      undone.
+
+      - Only record decisions that are genuinely load-bearing. Thirty ADRs means
+      none of them are respected.
+
+  - id: rollout
+    generates: rollout.md
+    description: Compatibility, migration, release, and rollback strategy
+    template: rollout.md
+    requires:
+      - benchmark
+      - threat-model
+    instruction: >
+      Plan how this reaches users and how it is undone.
+
+
+      Sections:
+
+      - **Compatibility Surface**: Everything users or integrations depend on —
+      command names and flags, config schema, on-disk state, protocol messages,
+      finding identifiers and schema, exit codes.
+
+      - **Migration**: How existing state and config are upgraded, including the
+      behavior when the upgrade fails midway.
+
+      - **Release Mechanics**: Platforms, artifacts, signing, and how a user
+      verifies what they installed.
+
+      - **Enablement Sequence**: How the feature turns on — observe, warn, block,
+      automate — and what governs each step.
+
+      - **Rollback**: How a user returns to the previous version with their state
+      intact, and what is lost if anything.
+
+      - **Failure Modes in the Field**: What breaks on a machine that is not the
+      developer's, and how it is diagnosed.
+
+
+      Rules:
+
+      - Any change to the compatibility surface MUST state its versioning
+      treatment explicitly.
+
+      - Anything that blocks a user's work MUST have a documented escape hatch
+      that does not require uninstalling.
+
+  - id: tasks
+    generates: tasks.md
+    description: Ordered implementation tasks with verification commands
+    template: tasks.md
+    requires:
+      - specs
+      - architecture
+      - threat-model
+      - benchmark
+      - adrs
+      - rollout
+    instruction: >
+      Break the work into ordered, verifiable tasks.
+
+
+      **IMPORTANT: follow the template exactly.** The apply phase parses checkbox
+      format to track progress. Tasks not written as `- [ ]` are not tracked.
+
+
+      Guidelines:
+
+      - Group related tasks under `## <n>. <heading>`.
+
+      - Each task MUST be a checkbox: `- [ ] X.Y Task description`.
+
+      - Order by dependency: what must exist first.
+
+      - Each task should be completable in one session.
+
+
+      Additional rules for this product:
+
+      - Every task MUST name the files or components it touches.
+
+      - Every task MUST carry a `Verify:` line with the exact command that proves
+      it is done. A task whose verification is "review the code" is not a task.
+
+      - Do NOT combine architecture change, feature implementation, and unrelated
+      refactoring in one task.
+
+      - Tasks that add a blocking behavior MUST be preceded by the task that makes
+      its evidence reproducible.
+
+  - id: verification
+    generates: verification.md
+    description: Evidence that the implementation satisfies the artifacts
+    template: verification.md
+    requires:
+      - tasks
+    instruction: >
+      Define the evidence contract that closes this change, then fill it in during
+      apply.
+
+
+      Sections:
+
+      - **Requirement Coverage**: A table mapping every requirement and scenario
+      in specs to the command or test that demonstrates it, with a `Status` column
+      (`pending`, `pass`, `fail`, `waived`).
+
+      - **Invariant Proofs**: For each ADR-level invariant, the check that detects
+      a violation.
+
+      - **Benchmark Results**: Measured values against the thresholds declared in
+      benchmark.md.
+
+      - **Threat Mitigation Evidence**: For each mitigation, the test that proves
+      it holds.
+
+      - **Waivers**: Anything not demonstrated, why, and when it will be.
+
+
+      Rules:
+
+      - At creation time every `Status` is `pending`. This artifact is authored as
+      a contract and completed as a record.
+
+      - Every `pass` MUST cite a command and its outcome, not a claim.
+
+      - A `waived` row without an owner and a date is not a waiver, it is an
+      omission.
+
+apply:
+  requires:
+    - tasks
+  tracks: tasks.md
+  instruction: |
+    Read research.md, product.md, specs, architecture.md, threat-model.md,
+    adrs.md, benchmark.md, and rollout.md before touching code.
+
+    Work through pending tasks in order. Run each task's `Verify:` command and
+    record the real outcome — never mark a task complete on the strength of the
+    code looking right.
+
+    Update verification.md as evidence accumulates.
+
+    Stop and ask if a task would require violating an ADR, mutating user
+    repository state, or weakening the default sandbox posture.

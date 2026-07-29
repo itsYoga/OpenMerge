@@ -1,0 +1,106 @@
+schema: openmerge-product
+
+context: |
+  Product: OpenMerge — a spec-aware integration control plane for parallel
+  coding agents. It keeps concurrently-working agents continuously
+  integratable: it understands each agent's intent and scope, builds throwaway
+  combined versions of their in-progress work, runs verifiable checks against
+  those combinations, and hands reproducible failure evidence back to the agent
+  that caused it.
+
+  Core promise: never let green agents combine into a red system.
+
+  What OpenMerge is not: a worktree manager, a merge queue, a Git conflict
+  detector, an AI code reviewer, a CI dashboard, a coding agent, or a semantic
+  merge algorithm. It is the coordination layer between those tools.
+
+  Naming (fixed — do not re-litigate):
+    Product            OpenMerge
+    Terminal binary    omrg
+    Daemon             openmerged
+    Config directory   .openmerge/
+    Config file        .openmerge/config.yaml
+    Rust crates        openmerge-*
+    AI command space   /omrg:*
+    Agent protocol     OpenMerge Agent Protocol
+    GitHub check       OpenMerge Gate
+    Benchmark          OpenMerge Bench
+    Hosted service     OpenMerge Cloud
+  Only the daily-use command surface is abbreviated. Internal names stay spelled
+  out.
+
+  Primary language: Rust. Surfaces: local CLI, long-running daemon, local web
+  UI, GitHub App.
+
+  Standing constraints:
+  - Deterministic evidence before probabilistic interpretation.
+  - Local-first: source code does not leave the machine unless the user
+    explicitly configures remote execution.
+  - Agent-agnostic: core crates must not depend on any single agent vendor.
+  - Safety: never mutate user branches, indexes, worktrees, refs, or stashes.
+  - Generic command checks must work before any language-specific adapter.
+  - Every verdict must be reproducible from an immutable content-addressed
+    snapshot.
+  - Model output may explain or suggest; it may never be the sole basis for a
+    blocking finding.
+  - Cloud is never required for local use.
+
+  Command surface is deliberately small. Core: init, watch, status, check,
+  gate. Secondary: explain, reproduce, plan, doctor, config. Do not introduce
+  scan / analyze / verify / validate / inspect / test as sibling verbs — users
+  cannot tell them apart.
+
+rules:
+  research:
+    - "Prefer primary sources: official repositories, official documentation, papers."
+    - Cite papers by identifier and quote the exact figure; never paraphrase statistics from memory.
+    - Cover direct competitors, adjacent tools, substitutes, and incumbent absorption risk.
+    - Mark unsupported assumptions explicitly and state what would falsify each.
+    - An empty search result is "unverified", never "does not exist".
+
+  product:
+    - Define who will not use this product.
+    - Include the exact must-have moment as a narrative, not a benefit list.
+    - Keep product value separate from technical novelty.
+    - Name the tool categories this will be mistaken for and state the difference.
+
+  specs:
+    - Use Requirement and Scenario structure; scenarios need exactly four hashtags.
+    - Every blocking behavior needs a pass, a fail, and a degraded scenario.
+    - No implementation detail — no crate, module, or file names.
+    - Never specify behavior that mutates user branches, indexes, worktrees, or refs.
+
+  architecture:
+    - Define trust boundaries explicitly.
+    - Define data ownership, retention, and what leaves the machine.
+    - Cover crash recovery, concurrency, stale-work cancellation, and caching correctness.
+    - State the latency budget for anything on an agent hook path.
+    - Include rejected alternatives.
+
+  threat-model:
+    - Treat repository contents, branch-supplied config, and agent-generated code as untrusted.
+    - Cover shell injection, secret leakage, malicious hooks, dependency scripts, resource exhaustion, sandbox escape, path traversal, and cache poisoning.
+    - Every mitigation must name the test that proves it holds.
+    - The default execution posture is the safe one; fast is opt-in.
+
+  benchmark:
+    - Require reproducible ground truth from a clean checkout by one command.
+    - Measure actionable precision, recall on known fixtures, false warnings per agent session, lead time ahead of the existing pipeline, and compute overhead.
+    - Do not use GitHub stars, downloads, or sign-ups as correctness metrics.
+
+  adrs:
+    - Write each decision as a violable constraint so violations are detectable.
+    - State reversal cost in terms of what breaks for existing users.
+
+  rollout:
+    - State the versioning treatment for every compatibility-surface change.
+    - Anything that blocks a user's work needs an escape hatch short of uninstalling.
+
+  tasks:
+    - Every task names the files or crates it touches.
+    - Every task carries a `Verify:` line with an exact command.
+    - Do not combine architecture change, implementation, and unrelated refactoring.
+
+  verification:
+    - Every `pass` cites a command and its real outcome.
+    - A waiver without an owner and a revisit date is an omission, not a waiver.
