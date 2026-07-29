@@ -1,3 +1,9 @@
+## Purpose
+<!-- New capabilities only: one or two sentences (50+ characters) on what this
+capability is for. Archive carries this into the main spec; without it the main
+spec is created with a TBD placeholder. Delete this section when writing a delta
+against an existing capability. -->
+
 ## ADDED Requirements
 
 ### Requirement: <!-- requirement name -->

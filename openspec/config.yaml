@@ -104,3 +104,17 @@ rules:
   verification:
     - Every `pass` cites a command and its real outcome.
     - A waiver without an owner and a revisit date is an omission, not a waiver.
+
+operations:
+  apply:
+    guidance:
+      - Run each task's `Verify:` command and record the real outcome; never mark a task complete because the code looks right.
+      - Update verification.md as evidence accumulates rather than at the end.
+      - Stop and ask before any change that would violate an ADR, mutate user repository state, or weaken the default sandbox posture.
+      - Report failures with their actual output. A task that cannot be verified is not complete.
+  archive:
+    guidance:
+      - Before archiving a change with `## MODIFIED Requirements`, re-read the live `openspec/specs/<capability>/spec.md` and rebase the delta onto it.
+      - "Archive's guard compares scenario names and counts only: it will not catch your block overwriting another change's edit to a scenario body or a requirement description. Diff those by hand."
+      - New capabilities must carry a `## Purpose` of 50+ characters, or the main spec is created with a placeholder.
+      - If archive aborts reporting scenarios missing from a MODIFIED block, another change landed first. Refresh the delta; never delete the reported scenarios to make the error go away.

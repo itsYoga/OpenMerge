@@ -73,6 +73,24 @@ implementation against a `design` artifact, which this schema does not have. Map
 that step onto `architecture.md` and `adrs.md` instead — an ADR violation is a
 CRITICAL coherence finding here, not a skipped check.
 
+**Changes with no spec-level behavior use `skip_specs`.** Workspace scaffolding,
+tooling, and docs changes have nothing observable to specify. Do not invent
+requirements to unblock the artifact graph — declare it in the change's
+`.openspec.yaml`:
+
+```yaml
+schema: openmerge-product
+skip_specs: true
+```
+
+`openspec status` then renders the specs stage as explicitly skipped and `tasks`
+no longer waits on it. Requires openspec >= 1.7.0.
+
+Per-operation guidance for `apply` and `archive` lives in `openspec/config.yaml`
+under `operations:`, and the workflows load it at execution time. Read it with
+`openspec instructions apply --change <name> --json` or
+`openspec instructions archive --change <name> --json`.
+
 ### Editing specs while other changes are active
 
 OpenSpec applies `## MODIFIED Requirements` by replacing the whole requirement

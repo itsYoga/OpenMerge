@@ -109,10 +109,19 @@ artifacts:
 
       Create one spec file per capability listed in the product's scope.
 
-      - New capabilities: kebab-case name at `specs/<capability>/spec.md`.
+      - New capabilities: kebab-case name at `specs/<capability>/spec.md`. Open
+      with `## Purpose` (50+ characters) — archive carries it into the main spec,
+      and omitting it leaves a TBD placeholder behind.
 
       - Modified capabilities: use the existing folder name from
-      `openspec/specs/<capability>/` when creating the delta spec.
+      `openspec/specs/<capability>/` when creating the delta spec, and omit
+      `## Purpose`. Re-read the live spec first; a MODIFIED block replaces the
+      whole requirement.
+
+      - If this change genuinely has no spec-level behavior (pure tooling,
+      workspace scaffolding, docs), do NOT invent requirements to satisfy the
+      graph. Declare `skip_specs: true` in the change's `.openspec.yaml`
+      instead.
 
 
       Delta operations (use ## headers):
