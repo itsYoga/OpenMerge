@@ -91,6 +91,37 @@ under `operations:`, and the workflows load it at execution time. Read it with
 `openspec instructions apply --change <name> --json` or
 `openspec instructions archive --change <name> --json`.
 
+### OpenSpec custom-schema limitation
+
+This repository uses the `openmerge-product` custom schema, whose first artifact
+is `research.md`, not `proposal.md`.
+
+Do not use:
+
+```
+openspec show <change> --json --deltas-only
+```
+
+That command assumes a `proposal.md` artifact and fails for this schema with
+`Change "<name>" has no proposal.md yet`. Use instead:
+
+```
+openspec status --change <name> --json
+openspec instructions <artifact> --change <name> --json
+openspec validate <name> --strict
+```
+
+Read the artifact files directly when delta context is required.
+
+**Do not add an empty `proposal` artifact as a compatibility workaround.** It
+would add a fake node to the dependency graph, invite an agent to fill it in,
+pollute completion semantics, and leave nobody able to tell later whether it is a
+real artifact or a hack. Record the limitation instead; see
+`docs/openspec-compatibility.md`.
+
+Anything that verifies a change must not depend exclusively on OpenSpec's
+proposal-specific delta reader.
+
 ### Editing specs while other changes are active
 
 OpenSpec applies `## MODIFIED Requirements` by replacing the whole requirement
@@ -115,9 +146,10 @@ merge, and a silently wrong result.
 | Layer | Name |
 | --- | --- |
 | Product | OpenMerge |
-| Terminal binary | `omrg` |
-| Daemon | `openmerged` |
-| Config directory | `.openmerge/` |
+| Terminal binary | `omrg` — the only published executable |
+| Daemon | `omrg daemon`, a hidden subcommand of the same binary |
+| Runtime state | `<git-common-dir>/openmerge/` |
+| Project config | `.openmerge/config.yaml` in the worktree |
 | Rust crates | `openmerge-*` |
 | AI commands | `/omrg:*` |
 | Agent protocol | OpenMerge Agent Protocol |
@@ -126,6 +158,12 @@ merge, and a silently wrong result.
 
 Only the daily command is abbreviated. Internal names stay spelled out —
 `crates/openmerge-git/`, not `crates/omrg-git/`.
+
+**There is no `openmerged` executable.** An earlier draft named one; the
+architecture ships a single binary so that the CLI and daemon can never disagree
+about version, and so that release signing has one artifact. "openmerged" is
+acceptable prose for "the daemon mode of `omrg`" and nothing else. Mode selection
+is by subcommand, never by inspecting `argv[0]`.
 
 Do not add `scan`, `analyze`, `verify`, `validate`, `inspect`, or `test` as
 sibling CLI verbs. Users cannot tell them apart. The core surface is `init`,

@@ -86,9 +86,10 @@ safely coexist*.
 | Layer | Name |
 | --- | --- |
 | Product | OpenMerge |
-| Terminal binary | `omrg` |
-| Daemon | `openmerged` |
-| Config directory | `.openmerge/` |
+| Terminal binary | `omrg` — the only published executable |
+| Daemon | `omrg daemon`, a hidden subcommand of the same binary |
+| Runtime state | `<git-common-dir>/openmerge/` |
+| Project config | `.openmerge/config.yaml` |
 | Rust crates | `openmerge-*` |
 | AI command namespace | `/omrg:*` |
 | Agent protocol | OpenMerge Agent Protocol |
@@ -97,7 +98,8 @@ safely coexist*.
 | Hosted service | OpenMerge Cloud |
 
 Only the command you type every day is abbreviated. Internal names stay spelled
-out.
+out. There is one binary, so the CLI and the daemon can never disagree about
+version and release signing has a single artifact.
 
 ## How this repository is developed
 
