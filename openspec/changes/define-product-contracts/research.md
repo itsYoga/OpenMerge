@@ -66,14 +66,14 @@ different pull requests are more likely to introduce bugs."
 Spearman rank correlation to bug fixes, concurrent versus non-concurrent edits
 (paper's Table 2), showing concurrent edits consistently higher:
 
-| Repo | Concurrent edits → bug fixes | Non-concurrent edits → bug fixes |
-| --- | --- | --- |
-| Repo-1 | 0.298 *** | 0.034 ** |
-| Repo-2 | 0.140 *** | 0.057 ** |
-| Repo-3 | 0.330 * | 0.120 * |
-| Repo-4 | 0.451 *** | −0.461 *** |
-| Repo-5 | 0.472 *** | 0.091 *** |
-| Repo-6 | 0.196 *** | 0.005 * |
+| Repo   | Concurrent edits → bug fixes | Non-concurrent edits → bug fixes |
+| ------ | ----------------------------- | --------------------------------- |
+| Repo-1 | 0.298 ***                     | 0.034 **                          |
+| Repo-2 | 0.140 ***                     | 0.057 **                          |
+| Repo-3 | 0.330 *                       | 0.120 *                           |
+| Repo-4 | 0.451 ***                     | −0.461 ***                       |
+| Repo-5 | 0.472 ***                     | 0.091 ***                         |
+| Repo-6 | 0.196 ***                     | 0.005 *                           |
 
 (*** p<0.001, ** p<0.01, * p<0.05)
 
@@ -181,13 +181,13 @@ baselines**.
 **This is the most serious challenge to OpenMerge's premise and must not be
 filed under "future competitor".** The two designs are opposed:
 
-| | STORM | OpenMerge |
-| --- | --- | --- |
-| Workspace | one shared workspace | isolated worktrees |
-| Strategy | prevent divergence at write time | permit divergence, verify combinations |
-| Touches the agent's write path | yes | no |
-| Verdict source | staleness of the local view | compiler / schema / test on the combination |
-| Works with agents as shipped | requires mediation | yes, via hooks |
+|                                | STORM                            | OpenMerge                                   |
+| ------------------------------ | -------------------------------- | ------------------------------------------- |
+| Workspace                      | one shared workspace             | isolated worktrees                          |
+| Strategy                       | prevent divergence at write time | permit divergence, verify combinations      |
+| Touches the agent's write path | yes                              | no                                          |
+| Verdict source                 | staleness of the local view      | compiler / schema / test on the combination |
+| Works with agents as shipped   | requires mediation               | yes, via hooks                              |
 
 If preventing divergence at write time beats isolate-then-verify, OpenMerge is
 solving a problem that better tooling upstream dissolves. The counter-argument
@@ -319,15 +319,15 @@ step Clash does not take, and it is where the differentiated capability starts.
 All three target agents expose synchronous lifecycle hooks with JSON on stdin.
 They are **not** equivalent, and the differences are not cosmetic:
 
-| | Claude Code | Codex | GitHub Copilot |
-| --- | --- | --- | --- |
-| Config | `.claude/settings.json` | `.codex/hooks.json` or `[hooks]` in `config.toml` | `.github/hooks/*.json` |
-| Events | ~30, incl. `WorktreeCreate`, `FileChanged`, `TeammateIdle` | 11 | 14 |
-| Default timeout | **600 s** (command hooks) | **600 s** (SessionEnd 1 s, max 3) | **30 s** (`timeoutSec`) |
-| Blocking completion | `Stop` / `SubagentStop`, exit 2 or `decision: "block"` | `Stop` / `SubagentStop` via `continue: false` | `agentStop` / `subagentStop`, `decision: "block"` |
-| Block ceiling | **none documented** | not documented | **runtime overrides after 8 consecutive blocks** |
-| Timeout behaviour | — | — | **fail-open** (even for policy hooks) |
-| Concurrency | all matching hooks run in parallel | — | synchronous |
+|                     | Claude Code                                                     | Codex                                                   | GitHub Copilot                                          |
+| ------------------- | --------------------------------------------------------------- | ------------------------------------------------------- | ------------------------------------------------------- |
+| Config              | `.claude/settings.json`                                       | `.codex/hooks.json` or `[hooks]` in `config.toml` | `.github/hooks/*.json`                                |
+| Events              | ~30, incl.`WorktreeCreate`, `FileChanged`, `TeammateIdle` | 11                                                      | 14                                                      |
+| Default timeout     | **600 s** (command hooks)                                 | **600 s** (SessionEnd 1 s, max 3)                 | **30 s** (`timeoutSec`)                         |
+| Blocking completion | `Stop` / `SubagentStop`, exit 2 or `decision: "block"`    | `Stop` / `SubagentStop` via `continue: false`     | `agentStop` / `subagentStop`, `decision: "block"` |
+| Block ceiling       | **none documented**                                       | not documented                                          | **runtime overrides after 8 consecutive blocks**  |
+| Timeout behaviour   | —                                                              | —                                                      | **fail-open** (even for policy hooks)             |
+| Concurrency         | all matching hooks run in parallel                              | —                                                      | synchronous                                             |
 
 Three consequences, none of which were in the founding brief:
 
@@ -383,67 +383,67 @@ merge, and a silently wrong result that no existing check reports.
 
 ## Evidence Ledger
 
-| Claim | Type | Source | Confidence |
-| --- | --- | --- | --- |
-| 40.2% of repos have co-active agent PR pairs; those pairs are 79.4% of agent PRs | measured-evidence | arXiv:2607.04697v2 abstract | high |
-| 53.4% of repos / 95.0% of PRs at a one-week window | measured-evidence | arXiv:2607.04697v2 | high |
-| Only 0.5% of co-active pairs are cross-agent | measured-evidence | arXiv:2607.04697v2 | high |
-| Textual conflict 19.8% intra-agent vs 41.7% cross-agent, over 747 merged pairs | measured-evidence | arXiv:2607.04697v2 abstract | high |
-| 27.67% conflict rate over 107k+ simulated merges of 142k+ agent PRs | measured-evidence | arXiv:2604.03551 abstract | high |
-| Concurrently edited files correlate more strongly with bug fixes than non-concurrent, across 6 repos, p<0.05 or better | measured-evidence | arXiv:2101.06542 Table 2 | high |
-| ConE: 234 repos, 26,000 PRs, 775 notifications, >70% (554) rated useful | measured-evidence | arXiv:2101.06542 abstract | high |
-| ConE: of 48 interviewed users, >90% intend to keep using it daily | measured-evidence | arXiv:2101.06542 abstract | high |
-| ConE decides overlap by file-set intersection, with no build or type analysis | verified-fact | arXiv:2101.06542 §4.1.1 EOO formula | high |
-| ConE deliberately traded recall for precision to avoid rejection | verified-fact | arXiv:2101.06542 §4 (quoted) | high |
-| SAM's best configuration detects 9 of 28 semantic conflicts (~32%) | verified-fact | arXiv:2310.02395 abstract (quoted) | high |
-| STORM reports 82.5% macro / 46.2% weighted on Commit0-Lite and 74.1 on PaperBench, beating git-worktree baselines | measured-evidence | arXiv:2605.20563 | medium — figures from search summary, not read in the paper body |
-| `git merge-tree --write-tree` never reads or writes the working tree or index | verified-fact | git-scm.com/docs/git-merge-tree (quoted) | high |
-| `git merge-tree` does not consider untracked files | verified-fact | git-merge-tree documentation | high |
-| Copilot's runtime overrides a blocking `agentStop` hook after 8 consecutive blocks | verified-fact | docs.github.com Copilot hooks reference | high |
-| Copilot hook timeouts fail open, including for policy hooks | verified-fact | docs.github.com Copilot hooks reference | high |
-| Claude Code command hooks default to a 600 s timeout and run in parallel | verified-fact | code.claude.com/docs/en/hooks | high |
-| Codex hooks default to 600 s (SessionEnd 1 s, max 3) | verified-fact | learn.chatgpt.com/docs/hooks | high |
-| Claude Code exposes `WorktreeCreate`, `FileChanged`, `TeammateIdle`, `SubagentStop` | verified-fact | code.claude.com/docs/en/hooks | high |
-| Clash performs no semantic or type-level compatibility evaluation | verified-fact | clash-sh/clash README | high |
-| Aviator requires a trigger label on a PR before speculative combination | verified-fact | docs.aviator.co parallel-mode | high |
-| Aviator evaluating never-submitted branches is undocumented | verified-fact (absence of documentation) | docs.aviator.co parallel-mode | medium — absence of documentation is not absence of capability |
-| OpenSpec Stores is Beta with unstable formats | verified-fact | OpenSpec `docs/stores-beta/user-guide.md` | high |
-| OpenSpec's archive scenario guard compares names and counts only, so scenario-body overwrites pass silently | verified-fact | `src/core/specs-apply.ts` `findMissingCurrentScenarios` | high |
-| Published textual-conflict rates are a lower bound on total coordination cost | **inference** | our reading; **no such statement found in either paper** | medium |
-| Clean-merge-but-broken-combination is frequent enough to justify a product | **assumption** | none published | low — **falsified if OpenMerge Bench, built from real repository history, cannot find such cases at a rate above roughly 1 in 20 co-active pairs** |
-| Users will accept a completion gate that blocks an agent | **assumption** | ConE retention intent is suggestive but ConE never blocked anything | low — **falsified if pilot users disable the gate, or run `--no-gate`, in more than ~20% of sessions** |
-| Isolate-then-verify beats prevent-at-write-time | **assumption** | STORM claims the opposite against worktree baselines | low — **falsified if a shared-workspace mediator matches OpenMerge on integration failures prevented without requiring agents to change how they write** |
-| Agent-agnostic support is worth its cost now | **assumption** | contradicted in the short term by the 0.5% cross-agent figure | low — **falsified if, after adapters ship, under ~10% of active sessions use a non-primary agent; the remaining argument would be lock-in avoidance, not present demand** |
-| "Keep agent hooks under ~5 seconds" is vendor guidance | **retracted** | not present in Claude Code, Codex, or Copilot hook docs | — treat the 200 ms fast-path target as our own SLO, not an external requirement |
+| Claim                                                                                                                  | Type                                     | Source                                                              | Confidence                                                                                                                                                                      |
+| ---------------------------------------------------------------------------------------------------------------------- | ---------------------------------------- | ------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 40.2% of repos have co-active agent PR pairs; those pairs are 79.4% of agent PRs                                       | measured-evidence                        | arXiv:2607.04697v2 abstract                                         | high                                                                                                                                                                            |
+| 53.4% of repos / 95.0% of PRs at a one-week window                                                                     | measured-evidence                        | arXiv:2607.04697v2                                                  | high                                                                                                                                                                            |
+| Only 0.5% of co-active pairs are cross-agent                                                                           | measured-evidence                        | arXiv:2607.04697v2                                                  | high                                                                                                                                                                            |
+| Textual conflict 19.8% intra-agent vs 41.7% cross-agent, over 747 merged pairs                                         | measured-evidence                        | arXiv:2607.04697v2 abstract                                         | high                                                                                                                                                                            |
+| 27.67% conflict rate over 107k+ simulated merges of 142k+ agent PRs                                                    | measured-evidence                        | arXiv:2604.03551 abstract                                           | high                                                                                                                                                                            |
+| Concurrently edited files correlate more strongly with bug fixes than non-concurrent, across 6 repos, p<0.05 or better | measured-evidence                        | arXiv:2101.06542 Table 2                                            | high                                                                                                                                                                            |
+| ConE: 234 repos, 26,000 PRs, 775 notifications, >70% (554) rated useful                                                | measured-evidence                        | arXiv:2101.06542 abstract                                           | high                                                                                                                                                                            |
+| ConE: of 48 interviewed users, >90% intend to keep using it daily                                                      | measured-evidence                        | arXiv:2101.06542 abstract                                           | high                                                                                                                                                                            |
+| ConE decides overlap by file-set intersection, with no build or type analysis                                          | verified-fact                            | arXiv:2101.06542 §4.1.1 EOO formula                                | high                                                                                                                                                                            |
+| ConE deliberately traded recall for precision to avoid rejection                                                       | verified-fact                            | arXiv:2101.06542 §4 (quoted)                                       | high                                                                                                                                                                            |
+| SAM's best configuration detects 9 of 28 semantic conflicts (~32%)                                                     | verified-fact                            | arXiv:2310.02395 abstract (quoted)                                  | high                                                                                                                                                                            |
+| STORM reports 82.5% macro / 46.2% weighted on Commit0-Lite and 74.1 on PaperBench, beating git-worktree baselines      | measured-evidence                        | arXiv:2605.20563                                                    | medium — figures from search summary, not read in the paper body                                                                                                               |
+| `git merge-tree --write-tree` never reads or writes the working tree or index                                        | verified-fact                            | git-scm.com/docs/git-merge-tree (quoted)                            | high                                                                                                                                                                            |
+| `git merge-tree` does not consider untracked files                                                                   | verified-fact                            | git-merge-tree documentation                                        | high                                                                                                                                                                            |
+| Copilot's runtime overrides a blocking`agentStop` hook after 8 consecutive blocks                                    | verified-fact                            | docs.github.com Copilot hooks reference                             | high                                                                                                                                                                            |
+| Copilot hook timeouts fail open, including for policy hooks                                                            | verified-fact                            | docs.github.com Copilot hooks reference                             | high                                                                                                                                                                            |
+| Claude Code command hooks default to a 600 s timeout and run in parallel                                               | verified-fact                            | code.claude.com/docs/en/hooks                                       | high                                                                                                                                                                            |
+| Codex hooks default to 600 s (SessionEnd 1 s, max 3)                                                                   | verified-fact                            | learn.chatgpt.com/docs/hooks                                        | high                                                                                                                                                                            |
+| Claude Code exposes`WorktreeCreate`, `FileChanged`, `TeammateIdle`, `SubagentStop`                             | verified-fact                            | code.claude.com/docs/en/hooks                                       | high                                                                                                                                                                            |
+| Clash performs no semantic or type-level compatibility evaluation                                                      | verified-fact                            | clash-sh/clash README                                               | high                                                                                                                                                                            |
+| Aviator requires a trigger label on a PR before speculative combination                                                | verified-fact                            | docs.aviator.co parallel-mode                                       | high                                                                                                                                                                            |
+| Aviator evaluating never-submitted branches is undocumented                                                            | verified-fact (absence of documentation) | docs.aviator.co parallel-mode                                       | medium — absence of documentation is not absence of capability                                                                                                                 |
+| OpenSpec Stores is Beta with unstable formats                                                                          | verified-fact                            | OpenSpec`docs/stores-beta/user-guide.md`                          | high                                                                                                                                                                            |
+| OpenSpec's archive scenario guard compares names and counts only, so scenario-body overwrites pass silently            | verified-fact                            | `src/core/specs-apply.ts` `findMissingCurrentScenarios`         | high                                                                                                                                                                            |
+| Published textual-conflict rates are a lower bound on total coordination cost                                          | **inference**                      | our reading;**no such statement found in either paper**       | medium                                                                                                                                                                          |
+| Clean-merge-but-broken-combination is frequent enough to justify a product                                             | **assumption**                     | none published                                                      | low —**falsified if OpenMerge Bench, built from real repository history, cannot find such cases at a rate above roughly 1 in 20 co-active pairs**                        |
+| Users will accept a completion gate that blocks an agent                                                               | **assumption**                     | ConE retention intent is suggestive but ConE never blocked anything | low —**falsified if pilot users disable the gate, or run `--no-gate`, in more than ~20% of sessions**                                                                  |
+| Isolate-then-verify beats prevent-at-write-time                                                                        | **assumption**                     | STORM claims the opposite against worktree baselines                | low —**falsified if a shared-workspace mediator matches OpenMerge on integration failures prevented without requiring agents to change how they write**                  |
+| Agent-agnostic support is worth its cost now                                                                           | **assumption**                     | contradicted in the short term by the 0.5% cross-agent figure       | low —**falsified if, after adapters ship, under ~10% of active sessions use a non-primary agent; the remaining argument would be lock-in avoidance, not present demand** |
+| "Keep agent hooks under ~5 seconds" is vendor guidance                                                                 | **retracted**                      | not present in Claude Code, Codex, or Copilot hook docs             | — treat the 200 ms fast-path target as our own SLO, not an external requirement                                                                                                |
 
 ## Open Questions
 
 - [ ] What is the real rate of clean-merge-but-failing-combination among
-      co-active agent changes? — resolved by building OpenMerge Bench from
-      replayed repository history and measuring it. Blocks the central product
-      claim; everything else is secondary to this.
+  co-active agent changes? — resolved by building OpenMerge Bench from
+  replayed repository history and measuring it. Blocks the central product
+  claim; everything else is secondary to this.
 - [ ] Does write-time mediation (STORM) dominate isolate-then-verify at scale? —
-      resolved by reading arXiv:2605.20563 and arXiv:2606.15376 in full,
-      including whether the git-worktree baseline was given any integration
-      verification at all, and whether the benchmarks contain multi-change
-      integration failures rather than single-task success.
+  resolved by reading arXiv:2605.20563 and arXiv:2606.15376 in full,
+  including whether the git-worktree baseline was given any integration
+  verification at all, and whether the benchmarks contain multi-change
+  integration failures rather than single-task success.
 - [ ] Can Aviator or a merge queue be pointed at unsubmitted branches in
-      practice? — resolved by testing, not by reading docs. Determines whether
-      the "in-progress window" is a moat or a temporary gap.
+  practice? — resolved by testing, not by reading docs. Determines whether
+  the "in-progress window" is a moat or a temporary gap.
 - [ ] What fraction of integration failures are catchable by deterministic
-      checks alone (compiler, type checker, schema validator, existing tests)
-      versus requiring new test generation? — resolved on the bench corpus.
-      Determines whether the product can honour "no model-only verdicts".
+  checks alone (compiler, type checker, schema validator, existing tests)
+  versus requiring new test generation? — resolved on the bench corpus.
+  Determines whether the product can honour "no model-only verdicts".
 - [ ] What is the actual cost per verified combination on a real monorepo, and
-      does incremental check selection keep it inside a laptop's budget? —
-      resolved by measurement during the execution-engine change.
+  does incremental check selection keep it inside a laptop's budget? —
+  resolved by measurement during the execution-engine change.
 - [ ] Is there a published rate for agent PRs that pass their own CI and then
-      break main? — searched without success in this pass; **unverified, not
-      absent**. Worth one more attempt before OpenMerge Bench assumes it does
-      not exist.
+  break main? — searched without success in this pass; **unverified, not
+  absent**. Worth one more attempt before OpenMerge Bench assumes it does
+  not exist.
 - [ ] Is `omrg` free of collision on crates.io, npm, Homebrew, and trademark
-      registers, and is `openmerge` available as a package name? — unverified;
-      blocks any public launch, blocks nothing before it.
+  registers, and is `openmerge` available as a package name? — unverified;
+  blocks any public launch, blocks nothing before it.
 
 ## Sources
 
